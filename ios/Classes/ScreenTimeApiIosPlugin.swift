@@ -25,10 +25,10 @@ public class ScreenTimeApiIosPlugin: NSObject, FlutterPlugin {
             FamilyControlModel.shared.saveSelection(selection: FamilyActivitySelection())
             result(nil)
         case "getBlockedApps":
-            let blockedApps = FamilyControlModel.shared.selectionToDiscourage.applicationTokens.map { $0.bundleIdentifier }
+            let blockedApps = FamilyControlModel.shared.selectionToDiscourage.applications.map { $0.bundleIdentifier }
             result(blockedApps)
         case "getBlockedCategories":
-            let blockedCategories = FamilyControlModel.shared.selectionToDiscourage.categoryTokens.map { $0.rawValue }
+            let blockedCategories = FamilyControlModel.shared.selectionToDiscourage.categories.map { $0.rawValue }
             result(blockedCategories)
         case "blockAppsAtTime":
             guard
