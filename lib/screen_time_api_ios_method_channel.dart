@@ -15,11 +15,41 @@ class MethodChannelScreenTimeApiIos extends ScreenTimeApiIosPlatform {
     return version;
   }
 
-  Future selectAppsToDiscourage() async {
+  Future<void> selectAppsToDiscourage() async {
     await methodChannel.invokeMethod('selectAppsToDiscourage');
   }
 
-  Future encourageAll() async {
+  Future<void> encourageAll() async {
     await methodChannel.invokeMethod('encourageAll');
+  }
+
+  Future<List<String>> getBlockedApps() async {
+    final blockedApps = await methodChannel.invokeMethod<List<dynamic>>('getBlockedApps');
+    return blockedApps?.cast<String>() ?? [];
+  }
+
+  Future<List<String>> getBlockedCategories() async {
+    final blockedCategories = await methodChannel.invokeMethod<List<dynamic>>('getBlockedCategories');
+    return blockedCategories?.cast<String>() ?? [];
+  }
+
+  Future<void> blockAppsAtTime(List<String> bundleIds, DateTime time) async {
+    await methodChannel.invokeMethod('blockAppsAtTime', {
+      'bundleIds': bundleIds,
+      'timestamp': time.millisecondsSinceEpoch / 1000, // 秒単位のタイムスタンプ
+    });
+  }
+
+  Future<void> unblockApp(String bundleId) async {
+    await methodChannel.invokeMethod('unblockApp', {
+      'bundleId': bundleId,
+    });
+  }
+
+  Future<void> unblockAppAtTime(String bundleId, DateTime time) async {
+    await methodChannel.invokeMethod('unblockAppAtTime', {
+      'bundleId': bundleId,
+      'timestamp': time.millisecondsSinceEpoch / 1000, // 秒単位のタイムスタンプ
+    });
   }
 }

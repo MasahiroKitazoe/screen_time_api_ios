@@ -1,4 +1,3 @@
-
 import 'screen_time_api_ios_platform_interface.dart';
 import 'screen_time_api_ios_method_channel.dart';
 
@@ -7,13 +6,18 @@ class ScreenTimeApiIos {
     return ScreenTimeApiIosPlatform.instance.getPlatformVersion();
   }
 
-  Future selectAppsToDiscourage() async {
+  Future<void> selectAppsToDiscourage() async {
     final instance = ScreenTimeApiIosPlatform.instance as MethodChannelScreenTimeApiIos;
     await instance.selectAppsToDiscourage();
   }
 
-  Future encourageAll() async {
+  Future<void> encourageAll() async {
     final instance = ScreenTimeApiIosPlatform.instance as MethodChannelScreenTimeApiIos;
     await instance.encourageAll();
+  }
+
+  Future<void> blockAppsAtTime(List<String> bundleIds, DateTime time) async {
+    final instance = ScreenTimeApiIosPlatform.instance as MethodChannelScreenTimeApiIos;
+    await instance.blockAppsAtTime(bundleIds, time);
   }
 }

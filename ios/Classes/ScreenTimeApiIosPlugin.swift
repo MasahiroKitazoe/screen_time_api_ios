@@ -24,6 +24,52 @@ public class ScreenTimeApiIosPlugin: NSObject, FlutterPlugin {
             FamilyControlModel.shared.encourageAll();
             FamilyControlModel.shared.saveSelection(selection: FamilyActivitySelection())
             result(nil)
+        case "getBlockedApps":
+            let blockedApps = FamilyControlModel.shared.selectionToDiscourage.applicationTokens.map { $0.bundleIdentifier }
+            result(blockedApps)
+        case "getBlockedCategories":
+            let blockedCategories = FamilyControlModel.shared.selectionToDiscourage.categoryTokens.map { $0.rawValue }
+            result(blockedCategories)
+        case "blockAppsAtTime":
+            guard
+                let args = call.arguments as? [String: Any],
+                let bundleIds = args["bundleIds"] as? [String],
+                let timestamp = args["timestamp"] as? TimeInterval
+            else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Invalid arguments", details: nil))
+                return
+            }
+
+            let fireDate = Date(timeIntervalSince1970: timestamp)
+            let timer = Timer(fireAt: fireDate, interval: 0, target: self, selector: #selector(blockApps(timer:)), userInfo: bundleIds, repeats: false)
+            RunLoop.main.add(timer, forMode: .common)
+            result(nil)
+        case "unblockApp":
+            guard let args = call.arguments as? [String: Any],
+                      let bundleId = args["bundleId"] as? String
+                else {
+                    result(FlutterError(code: "INVALID_ARGUMENT", message: "Invalid arguments", details: nil))
+                    return
+                }
+
+                var selection = FamilyControlModel.shared.selectionToDiscourage
+                selection.applicationTokens.remove(ApplicationToken(bundleIdentifier: bundleId))
+                FamilyControlModel.shared.selectionToDiscourage = selection
+                result(nil)
+        case "unblockAppAtTime":
+            guard
+                    let args = call.arguments as? [String: Any],
+                    let bundleId = args["bundleId"] as? String,
+                    let timestamp = args["timestamp"] as? TimeInterval
+                else {
+                    result(FlutterError(code: "INVALID_ARGUMENT", message: "Invalid arguments", details: nil))
+                    return
+                }
+
+                let fireDate = Date(timeIntervalSince1970: timestamp)
+                let timer = Timer(fireAt: fireDate, interval: 0, target: self, selector: #selector(unblockApp(timer:)), userInfo: bundleId, repeats: false)
+                RunLoop.main.add(timer, forMode: .common)
+                result(nil)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -31,6 +77,24 @@ public class ScreenTimeApiIosPlugin: NSObject, FlutterPlugin {
     
     @objc func onPressClose(){
         dismiss()
+    }
+
+    @objc private func blockApps(timer: Timer) {
+        guard let bundleIds = timer.userInfo as? [String] else { return }
+
+        var selection = FamilyControlModel.shared.selectionToDiscourage
+        for bundleId in bundleIds {
+            selection.applicationTokens.insert(ApplicationToken(bundleIdentifier: bundleId))
+        }
+        FamilyControlModel.shared.selectionToDiscourage = selection
+    }
+
+    @objc private func unblockApp(timer: Timer) {
+        if let bundleId = timer.userInfo as? String {
+            var selection = FamilyControlModel.shared.selectionToDiscourage
+            selection.applicationTokens.remove(ApplicationToken(bundleIdentifier: bundleId))
+            FamilyControlModel.shared.selectionToDiscourage = selection
+        }
     }
     
     func showController() {
